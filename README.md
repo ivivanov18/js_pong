@@ -4,6 +4,8 @@
 This a JS implementation of classic PONG game. The implementation does not use any third parties libraries. 
 It uses Canvas API.
 
+![pong](https://user-images.githubusercontent.com/4789838/122274159-eaaff000-ceea-11eb-968d-6c5da5c927d9.png)
+
 ## Classes
 ### Game
 The controller - contains the main logic for the game
