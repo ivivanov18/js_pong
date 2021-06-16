@@ -24,29 +24,56 @@ class Game {
   }
 
   animate() {
+    if (this._setOver) {
+      this.startNewSet();
+    }
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
     this.displayScore();
     this._ball.update();
     this._racket.update();
     this._aiRacket.update();
-    this.checkCollision();
+    if (this._ball.x <= this._canvas.width / 2) {
+      this.checkCollisionWithRacket({
+        first: [this._racket.x + this._racket.width, this._racket.y],
+        second: [
+          this._racket.x + this._racket.width,
+          this._racket.y + this._racket.height,
+        ],
+      });
+    } else {
+      this.checkCollisionWithAiRacket({
+        first: [this._aiRacket.x, this._aiRacket.y],
+        second: [this._aiRacket.x, this._aiRacket.y + this._aiRacket.height],
+      });
+    }
     this.checkIfScored();
-
     this._ball.draw();
     this._racket.draw();
     this._aiRacket.draw();
     window.requestAnimationFrame(this.animate.bind(this));
   }
 
-  checkCollision() {
+  checkCollisionWithRacket(collidingSide) {
     if (
-      this._ball.x >= this._racket.x + this._racket.width ||
-      this._ball.y <= this._racket.y ||
-      this._ball.y >= this._racket.y + this._racket.height
+      this._ball.x <= collidingSide.first[0] &&
+      this._ball.y >= collidingSide.first[1] &&
+      this._ball.y <= collidingSide.second[1]
     ) {
-      return;
-    } else {
       this._ball.vx = -this._ball.vx;
+    } else {
+      return;
+    }
+  }
+
+  checkCollisionWithAiRacket(collidingSide) {
+    if (
+      this._ball.x + this._ball.width >= collidingSide.first[0] &&
+      this._ball.y >= collidingSide.first[1] &&
+      this._ball.y <= collidingSide.second[1]
+    ) {
+      this._ball.vx = -this._ball.vx;
+    } else {
+      return;
     }
   }
 
@@ -59,10 +86,18 @@ class Game {
     this.animate();
   }
 
+  startNewSet() {
+    this._ball = new Ball(this._ctx);
+    this._setOver = false;
+  }
+
   checkIfScored() {
     const { player, computer } = this._score;
     if (this._ball.x < this._racket.x) {
       this.score = { player, computer: computer + 1 };
+      this._setOver = true;
+    } else if (this._ball.x > this._aiRacket.x) {
+      this.score = { player: player + 1, computer };
       this._setOver = true;
     }
   }
